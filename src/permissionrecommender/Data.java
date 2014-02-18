@@ -38,19 +38,27 @@ public class Data {
         }
     }
     /*Constructor with direct line, it is expected that the csv file only consists the user id and item ratings. If there is extra data, try using other functions*/
+    //unknown rating will be counted as 0
     public Data(String line,int total_items){
         
         this.total_items=total_items;
         String tokens[] = line.split("[,]");
-        this.user_id=Integer.parseInt(tokens[0]);
-        
-                
+        this.user_id=Integer.parseInt(tokens[0]); 
+        initialize_rating();
         for(int i=0; i<total_items; i++){
-            rating[i] = Double.parseDouble(tokens[i]);
+            if(tokens[i].compareTo("?")!=0)
+            {
+                rating[i] = Double.parseDouble(tokens[i]);
+            }
+            else
+            {
+                rating[i]=0;
+            }
         }
        
     }
     
+  
    
 
      /* Function for Intitalize */
@@ -99,6 +107,9 @@ public class Data {
     {
         return rating[index];
     }
-    
+    public int get_user_id()
+    {
+        return user_id;
+    }
    
 }
