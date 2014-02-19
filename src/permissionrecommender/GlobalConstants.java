@@ -9,5 +9,5 @@ package permissionrecommender;
  * @author eshan
  */
 public class GlobalConstants {
-    public static final int number_of_items=16;
+    public static final int number_of_items=15;
 }
