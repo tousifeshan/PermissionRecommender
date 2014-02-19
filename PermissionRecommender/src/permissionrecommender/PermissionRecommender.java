@@ -20,6 +20,7 @@ public class PermissionRecommender {
 
     public static Vector<User_Ratings> allData = new Vector<User_Ratings>();
     public static ItemNames names= new ItemNames(GlobalConstants.number_of_items);
+    public static Vector<User_User> users_correlation=new Vector<User_User>();
     /**
      * @param args the command line arguments
      */
@@ -66,6 +67,32 @@ public class PermissionRecommender {
             "RA_C","C_Co","PS_C","PS_Co","RA_Co","PS_RA_C","PS_RA_Co","PS_C_Co","RA_C_Co","PS_RA_C_Co"};
         names.set_item_names(name);
     }
+    
+    public static void set_user_user()
+    {
+        
+        for(int i=0;i<allData.size();i++)
+        {
+           
+            User_Ratings user_1=allData.get(i);
+          //  user_corr.add_user1(user_1);
+            for(int j=i+1; j<allData.size();j++)
+            {
+                User_User user_corr=new User_User();
+                User_Ratings user_2=allData.get(j);
+                user_corr.add_users(user_1, user_2);
+                user_corr.add_user2(user_2);
+                user_corr.calculate_similarity();
+                System.out.print("User 1:  "+user_1.get_user_id()+"\n User 2: "+
+                        user_2.get_user_id()+"\n Cosine Similarity: "+user_corr.get_cosine_similarity()+
+                        "\n Pearson Correlation: "+user_corr.get_pearson_correlation()+"\n Constraint Pearson: "+
+                        user_corr.get_constraint_pearson_correlation()+"\n");
+                System.out.println("-----------------------------------------------------------------------------------");
+                users_correlation.add(user_corr);
+                
+            }
+        }
+    }
     public static void print_data()
     {
         for(int j=0;j<allData.size();j++)
@@ -84,10 +111,13 @@ public class PermissionRecommender {
             System.out.println("-------------------------------------------");
         }
     }
+    
+    
     public static void main(String[] args) {
         // TODO code application logic here
         set_item_name();
         readFile(true, "fake_dataset.csv");
-        print_data();
+       // print_data();
+        set_user_user();
     }
 }
