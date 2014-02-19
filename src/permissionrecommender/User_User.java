@@ -67,7 +67,7 @@ public class User_User {
             {
                 numerator+=((user_1_rating-user_1_mean)*(user_2_rating-user_2_mean));
                 user1_denominator+=((user_1_rating-user_1_mean)*(user_1_rating-user_1_mean));
-                user2_denominator+=((user_2_rating-user_1_mean)*(user_2_rating-user_1_mean));
+                user2_denominator+=((user_2_rating-user_2_mean)*(user_2_rating-user_2_mean));
                 
             }
         }
@@ -110,13 +110,12 @@ public class User_User {
            
             double user_2_rating=user_2.get_specific_rating(i);
             
-            if((user_1_rating>0.0) && (user_2_rating>0.0))
-            {
-                numerator+=((user_1_rating)*(user_2_rating));
-                user1_denominator+=((user_1_rating)*(user_1_rating));
-                user2_denominator+=((user_2_rating)*(user_2_rating));
+            
+            numerator+=((user_1_rating)*(user_2_rating));
+            user1_denominator+=((user_1_rating)*(user_1_rating));
+            user2_denominator+=((user_2_rating)*(user_2_rating));
                 
-            }
+            
         }
         cosine_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         
@@ -126,6 +125,19 @@ public class User_User {
         calculate_pearson_distance();
         calculate_constraint_pearson_distance();
         calculate_cosine_similarity();
+    }
+    
+    public double get_pearson_correlation()
+    {
+        return pearson_similarity;
+    }
+    public double get_constraint_pearson_correlation()
+    {
+        return constrained_pearson_similarity;
+    }
+    public double get_cosine_similarity()
+    {
+        return cosine_similarity;
     }
     
 }
