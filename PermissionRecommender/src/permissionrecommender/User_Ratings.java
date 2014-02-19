@@ -9,25 +9,27 @@ package permissionrecommender;
  * 
  * @author touahmed
  */
-public class Data {
+public class User_Ratings {
     private int user_id; // the user_id
     private double[] rating; // ratings for different items
+    private double mean_rating;
     private int total_items; // For CrowdSec it refers to total no of apps
     
+    
     /* Default Constructor */
-    public Data() // constructor
+    public User_Ratings() // constructor
     {
         int user_id=0;
         total_items=0;      
     }
     
     /* Constructor with total items */
-    public Data(int total_items)
+    public User_Ratings(int total_items)
     {
         this.total_items=total_items;
         initialize_rating();
     }
-    public Data(int user_id, double [] item_ratings)
+    public User_Ratings(int user_id, double [] item_ratings)
     {
         this.user_id=user_id;
         this.total_items=item_ratings.length;
@@ -39,23 +41,28 @@ public class Data {
     }
     /*Constructor with direct line, it is expected that the csv file only consists the user id and item ratings. If there is extra data, try using other functions*/
     //unknown rating will be counted as 0
-    public Data(String line,int total_items){
+    public User_Ratings(String line,int total_items){
         
         this.total_items=total_items;
         String tokens[] = line.split("[,]");
+        int sum_rating=0;
+        int total_rating=0;
         this.user_id=Integer.parseInt(tokens[0]); 
         initialize_rating();
         for(int i=0; i<total_items; i++){
-            if(tokens[i].compareTo("?")!=0)
+            if(tokens[i+1].compareTo("?")!=0)
             {
-                rating[i] = Double.parseDouble(tokens[i]);
+                rating[i] = Double.parseDouble(tokens[i+1]);
+                sum_rating+=rating[i];
+                total_rating++;
+                
             }
             else
             {
                 rating[i]=0;
             }
         }
-       
+       mean_rating=(double)sum_rating/(double)total_rating;
     }
     
   
@@ -111,5 +118,9 @@ public class Data {
     {
         return user_id;
     }
-   
+    public double get_mean()
+    {
+        return mean_rating;
+    }
+    
 }

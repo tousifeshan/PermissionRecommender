@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class PermissionRecommender {
 
-    public static Vector<Data> allData = new Vector<Data>();
+    public static Vector<User_Ratings> allData = new Vector<User_Ratings>();
     public static ItemNames names= new ItemNames(GlobalConstants.number_of_items);
     /**
      * @param args the command line arguments
@@ -47,11 +47,11 @@ public class PermissionRecommender {
                 if(header)
                 {
                     if(i!=0)
-                        allData.add(new Data(line,GlobalConstants.number_of_items));
+                        allData.add(new User_Ratings(line,GlobalConstants.number_of_items));
                 }
                 else
                 {
-                    allData.add(new Data(line,GlobalConstants.number_of_items));
+                    allData.add(new User_Ratings(line,GlobalConstants.number_of_items));
                     
                 }
             }
@@ -62,7 +62,7 @@ public class PermissionRecommender {
     }
     public static void set_item_name()
     {
-        String[] name={"User Id","Phone_State","Record_Audio","Camera", "Contacts","PS_RA",
+        String[] name={"Phone_State","Record_Audio","Camera", "Contacts","PS_RA",
             "RA_C","C_Co","PS_C","PS_Co","RA_Co","PS_RA_C","PS_RA_Co","PS_C_Co","RA_C_Co","PS_RA_C_Co"};
         names.set_item_names(name);
     }
@@ -70,15 +70,17 @@ public class PermissionRecommender {
     {
         for(int j=0;j<allData.size();j++)
         {
-            Data d=allData.get(j);
+            User_Ratings d=allData.get(j);
             System.out.println("User: "+j);
+            System.out.println("User Id:  "+d.get_user_id());
             for(int i=0;i<GlobalConstants.number_of_items;i++)
             {
-                if(i==0)
-                    System.out.println(names.get_names(i)+" "+d.get_user_id());
-                else
-                    System.out.println(names.get_names(i)+" "+d.get_specific_rating(i));
+               // if(i==0)
+                   // System.out.println(names.get_names(i)+" "+d.get_user_id());
+                //else
+                System.out.println(names.get_names(i)+" "+d.get_specific_rating(i));
             }
+            System.out.println("Average: "+d.get_mean());
             System.out.println("-------------------------------------------");
         }
     }
