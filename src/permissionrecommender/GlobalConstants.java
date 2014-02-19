@@ -10,4 +10,5 @@ package permissionrecommender;
  */
 public class GlobalConstants {
     public static final int number_of_items=15;
+    public static final int neutral_rating=4;
 }
