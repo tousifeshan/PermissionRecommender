@@ -4,6 +4,8 @@
  */
 package permissionrecommender;
 
+import java.util.ArrayList;
+
 /**
  * This class is used to store the ratings for the users. This class will be the basic data set.
  * 
@@ -12,15 +14,18 @@ package permissionrecommender;
 public class User_Ratings {
     private int user_id; // the user_id
     private double[] rating; // ratings for different items
+    ArrayList<Integer> used_item_index=new ArrayList<Integer>();
     private double mean_rating;
     private int total_items; // For CrowdSec it refers to total no of apps
+    private int total_used;
     
     
     /* Default Constructor */
     public User_Ratings() // constructor
     {
         int user_id=0;
-        total_items=0;      
+        total_items=0;   
+        total_used=0;
     }
     
     /* Constructor with total items */
@@ -37,6 +42,7 @@ public class User_Ratings {
         for(int i=0;i<total_items;i++)
         {
             rating[i]=item_ratings[i];
+            used_item_index.add(i);
         }
     }
     /*Constructor with direct line, it is expected that the csv file only consists the user id and item ratings. If there is extra data, try using other functions*/
@@ -53,6 +59,7 @@ public class User_Ratings {
             if(tokens[i+1].compareTo("?")!=0)
             {
                 rating[i] = Double.parseDouble(tokens[i+1]);
+                used_item_index.add(i);
                 sum_rating+=rating[i];
                 total_rating++;
                 
@@ -63,6 +70,7 @@ public class User_Ratings {
             }
         }
        mean_rating=(double)sum_rating/(double)total_rating;
+       total_used=total_rating;
     }
     
   
@@ -123,4 +131,14 @@ public class User_Ratings {
         return mean_rating;
     }
     
+    public int leave_nth_one(int n)
+    {
+        int index=used_item_index.get(n).intValue();
+        return index;
+    }
+    
+    public int get_total_used()
+    {
+        return total_used;   
+    }
 }

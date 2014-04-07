@@ -11,16 +11,20 @@ package permissionrecommender;
 public class User_User {
     private User_Ratings user_1;
     private User_Ratings user_2;
+    private double correlation;
+    
+  /*  
     private double pearson_similarity;
     private double constrained_pearson_similarity;
-    private double cosine_similarity;
+    private double cosine_similarity;*/
 
     public User_User() {
         user_1=new User_Ratings();
         user_2=new User_Ratings();
-        pearson_similarity=0.0;
+        correlation=0.0;
+   /*     pearson_similarity=0.0;
         cosine_similarity=0.0;
-        constrained_pearson_similarity=0.0;
+        constrained_pearson_similarity=0.0;*/
         
     }
     public void add_user1(User_Ratings user1)
@@ -71,7 +75,12 @@ public class User_User {
                 
             }
         }
-        pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+         if(user1_denominator==0.0)
+            user1_denominator+=0.0001;
+        if(user2_denominator==0.0)
+            user2_denominator+=0.0001;
+      //  pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        correlation=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         
     }
     
@@ -95,7 +104,12 @@ public class User_User {
                 
             }
         }
-        constrained_pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        if(user1_denominator==0.0)
+            user1_denominator+=0.0001;
+        if(user2_denominator==0.0)
+            user2_denominator+=0.0001;
+       // constrained_pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        correlation=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));;
         
     }
     public void calculate_cosine_similarity()
@@ -117,7 +131,12 @@ public class User_User {
                 
             
         }
-        cosine_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        if(user1_denominator==0.0)
+            user1_denominator+=0.0001;
+        if(user2_denominator==0.0)
+            user2_denominator+=0.0001;
+//        cosine_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        correlation=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         
     }
     public void calculate_similarity()
@@ -127,7 +146,22 @@ public class User_User {
         calculate_cosine_similarity();
     }
     
-    public double get_pearson_correlation()
+    public void calculate_similarity(int metric_type)
+    {
+        if(metric_type==GlobalConstants.metric_pearson_corrlation)
+            calculate_pearson_distance();
+        if(metric_type==GlobalConstants.metric_contsrained_pearson_corrlation)
+            calculate_constraint_pearson_distance();
+        if(metric_type==GlobalConstants.metric_cosine_similarity)
+            calculate_cosine_similarity();
+    }
+    
+    public double get_correlation()
+    {
+        return correlation;
+    }
+    
+ /*   public double get_pearson_correlation()
     {
         return pearson_similarity;
     }
@@ -138,6 +172,7 @@ public class User_User {
     public double get_cosine_similarity()
     {
         return cosine_similarity;
-    }
-    
+    }*/
+
+   
 }
