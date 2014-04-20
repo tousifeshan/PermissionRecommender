@@ -13,10 +13,10 @@ public class User_User {
     private User_Ratings user_2;
     private double correlation;
     
-  /*  
+    
     private double pearson_similarity;
     private double constrained_pearson_similarity;
-    private double cosine_similarity;*/
+    private double cosine_similarity;
 
     public User_User() {
         user_1=new User_Ratings();
@@ -55,7 +55,7 @@ public class User_User {
         return user_2;
     }
     
-    public void calculate_pearson_distance()
+    public void calculate_pearson_distance(int index)
     {
         double numerator=0.0;
         double denominator=0.0;
@@ -79,12 +79,12 @@ public class User_User {
             user1_denominator+=0.0001;
         if(user2_denominator==0.0)
             user2_denominator+=0.0001;
-      //  pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         correlation=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         
     }
     
-    public void calculate_constraint_pearson_distance()
+    public void calculate_constraint_pearson_distance(int index)
     {
         double numerator=0.0;
         double user1_denominator=0.0;
@@ -108,11 +108,11 @@ public class User_User {
             user1_denominator+=0.0001;
         if(user2_denominator==0.0)
             user2_denominator+=0.0001;
-       // constrained_pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        constrained_pearson_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         correlation=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));;
         
     }
-    public void calculate_cosine_similarity()
+    public void calculate_cosine_similarity(int index)
     {
         double numerator=0.0;
         double user1_denominator=0.0;
@@ -120,14 +120,17 @@ public class User_User {
         
         for(int i=0;i<GlobalConstants.number_of_items;i++)
         {
-            double user_1_rating=user_1.get_specific_rating(i);
-           
-            double user_2_rating=user_2.get_specific_rating(i);
-            
-            
-            numerator+=((user_1_rating)*(user_2_rating));
-            user1_denominator+=((user_1_rating)*(user_1_rating));
-            user2_denominator+=((user_2_rating)*(user_2_rating));
+            if(user_2.get_specific_rating(index)>0.0)
+            {
+                double user_1_rating=user_1.get_specific_rating(i);
+
+                double user_2_rating=user_2.get_specific_rating(i);
+
+
+                numerator+=((user_1_rating)*(user_2_rating));
+                user1_denominator+=((user_1_rating)*(user_1_rating));
+                user2_denominator+=((user_2_rating)*(user_2_rating));
+            }
                 
             
         }
@@ -135,25 +138,25 @@ public class User_User {
             user1_denominator+=0.0001;
         if(user2_denominator==0.0)
             user2_denominator+=0.0001;
-//        cosine_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
+        cosine_similarity=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         correlation=numerator/(Math.sqrt(user1_denominator)*Math.sqrt(user2_denominator));
         
     }
     public void calculate_similarity()
     {
-        calculate_pearson_distance();
-        calculate_constraint_pearson_distance();
-        calculate_cosine_similarity();
+        calculate_pearson_distance(0);
+        calculate_constraint_pearson_distance(0);
+        calculate_cosine_similarity(0);
     }
     
-    public void calculate_similarity(int metric_type)
+    public void calculate_similarity(int metric_type, int index)
     {
         if(metric_type==GlobalConstants.metric_pearson_corrlation)
-            calculate_pearson_distance();
+            calculate_pearson_distance(index);
         if(metric_type==GlobalConstants.metric_contsrained_pearson_corrlation)
-            calculate_constraint_pearson_distance();
+            calculate_constraint_pearson_distance(index);
         if(metric_type==GlobalConstants.metric_cosine_similarity)
-            calculate_cosine_similarity();
+            calculate_cosine_similarity(index);
     }
     
     public double get_correlation()
@@ -161,7 +164,7 @@ public class User_User {
         return correlation;
     }
     
- /*   public double get_pearson_correlation()
+    public double get_pearson_correlation()
     {
         return pearson_similarity;
     }
@@ -172,7 +175,7 @@ public class User_User {
     public double get_cosine_similarity()
     {
         return cosine_similarity;
-    }*/
+    }
 
    
 }
