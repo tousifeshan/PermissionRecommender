@@ -18,6 +18,7 @@ public class User_Ratings {
     private double mean_rating;
     private int total_items; // For CrowdSec it refers to total no of apps
     private int total_used;
+    private double std;
     
     
     /* Default Constructor */
@@ -71,11 +72,43 @@ public class User_Ratings {
         }
        mean_rating=(double)sum_rating/(double)total_rating;
        total_used=total_rating;
+       calculate_std();
     }
     
-  
+    public void calculate_std()
+    {
+        double ssq=0;
+        for(int i=0;i<total_items;i++)
+        {
+            if(rating[i]>0.0)
+            {
+                ssq+=(rating[i]-mean_rating)* (rating[i]-mean_rating);
+            }
+        }
+        std=Math.sqrt(ssq/total_items);
+    }
+    
+      
+    public double get_std()
+    {
+       return std;
+    }
+    
    
-
+   public void calculate_mean()
+   {
+       int sum_rating=0;
+       int total_rating=0;
+       for(int i=0; i<total_items; i++){
+           if(rating[i]>0.0)
+           {
+               sum_rating+=rating[i];
+               total_rating++;
+           }
+       }
+       mean_rating=(double)sum_rating/(double)total_rating;
+    //   System.out.println("mean "+ mean_rating);
+   }
      /* Function for Intitalize */
     public void initialize()
     {
@@ -116,6 +149,7 @@ public class User_Ratings {
     public void set_specific_rating(double rating, int index)
     {
         this.rating[index]=rating;
+        calculate_mean();
     }
     
     public double get_specific_rating(int index)
