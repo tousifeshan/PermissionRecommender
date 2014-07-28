@@ -28,6 +28,16 @@ public class PermissionRecommender {
     public static Vector<ItemClass> itemRatings = new Vector<ItemClass>();
     public static Vector<Lattice> lattice=new Vector<Lattice>();
     public static Vector<VariantClass> variant=new Vector<VariantClass>();
+    
+    
+    public static String filename_variant1_precision="Variant1_precision_nn2_graph1_curve2_new.csv";
+    public static String filename_variant1_recall="Variant1_recall_nn2_graph1_curve2_new.csv";
+    public static String filename_variant2_precision="Variant2_precision_original.csv";
+    public static String filename_variant2_recall="Variant2_recall_original.csv";
+    
+    
+   
+    
     /**
      * @param args the command line arguments
      */
@@ -187,40 +197,6 @@ public class PermissionRecommender {
      //  }
     }
     
-    public static void set_item_item()
-    {
-        
-        for(int i=0;i<itemRatings.size();i++)
-        {
-             ItemClass item_1=itemRatings.get(i);
-             SortByMetric sorted_map=new SortByMetric(item_1.get_id());
-              for(int j=0; j<itemRatings.size();j++)
-              {
-                if(j!=i)
-                {
-                    ItemBased item_corr=new ItemBased();
-                    ItemClass item_2=itemRatings.get(j);
-                    
-                    item_corr.add_items(item_1, item_2);
-                    
-                    item_corr.calculate_cosine_similarity();
-                    
-               //     System.out.println(" Item 1: "+item_1.get_id()+"\n Item 2: "+
-                //     item_2.get_id()+"\nCorrelation "+ item_corr.get_correlation());
-                    
-                    items_correlation.add(item_corr);
-                    sorted_map.addValue(item_2.get_id(), item_corr.get_correlation());
-                    
-                }
-              }
-              sorted_map.sortMap();
-          //   System.out.println("Active Item: "+sorted_map.get_active_user_id());
-        //      System.out.println("Sorted Map");
-      //      System.out.println("-----------------------------------------------------------------------------------");
-        //    sorted_map.printeSortedMap();
-        }
-        
-    }
     
     public static User_Ratings get_user_by_id(int userId)
     {
@@ -301,44 +277,15 @@ public class PermissionRecommender {
         Random rn=new Random();
         for(int i=0;i<GlobalConstants.number_of_neighbours;i++)
         {
+         //   System.out.println(rn.nextInt(sorted_ids.size()));
             User_Ratings neighbour=get_user_by_id(sorted_ids.get( rn.nextInt(sorted_ids.size())).intValue());
+            
             nn.add_nearest_neighbours(neighbour);
         }
         users_nearest_neighbours.add(nn);
     }
     
-    public static void print_data()
-    {
-        for(int j=0;j<allUserRatings.size();j++)
-        {
-            User_Ratings d=allUserRatings.get(j);
-            System.out.println("User: "+j);
-            System.out.println("User Id:  "+d.get_user_id());
-            for(int i=0;i<GlobalConstants.number_of_items;i++)
-            {
-               // if(i==0)
-                   // System.out.println(names.get_names(i)+" "+d.get_user_id());
-                //else
-                System.out.println(GlobalConstants.names.get_names(i)+" "+d.get_specific_rating(i));
-            }
-            System.out.println("Average: "+d.get_mean());
-            System.out.println("-------------------------------------------");
-        }
-    }
-    public static void print_nearest_neighbours()
-    {
-        for(int i=0;i<users_nearest_neighbours.size();i++)
-        {
-         //   System.out.println("Active User: "+ users_nearest_neighbours.get(i).get_active_user_id());
-             System.out.println("-------------------------------------------");
-             for(int j=0;j<GlobalConstants.number_of_neighbours;j++)
-             {
-                 System.out.println("Neighbour "+ j+ " : " + users_nearest_neighbours.get(i).get_neighbours_id(j));
-             }
-             System.out.println("-------------------------------------------");
-            
-        }
-    }
+    
     
     // Predict ratings using the similarity
     public static double predict_ratings_based_on_similarity(User_Ratings active_user,Neighbours nn, int index)
@@ -356,9 +303,14 @@ public class PermissionRecommender {
                 if((users_correlation.get(j).get_user1().get_user_id()==active_user_id) && (users_correlation.get(j).get_user2().get_user_id()==neighbour_id) )
                 {
                     //System.out.println("Index: "+j);
-                    sum_correlation_ratings+=(users_correlation.get(j).get_correlation())*(users_correlation.get(j).get_user2().get_specific_rating(index)-users_correlation.get(j).get_user2().get_mean());
+            //       double std=users_correlation.get(j).get_user2().get_std()==0.0?0:(1/users_correlation.get(j).get_user2().get_std());
+            //       sum_correlation_ratings+=(users_correlation.get(j).get_correlation())*
+             //              ((users_correlation.get(j).get_user2().get_specific_rating(index)-users_correlation.get(j).get_user2().get_mean())*std);
                     
-                  //  System.out.println("Correlation: "+ users_correlation.get(j).get_correlation());
+                   sum_correlation_ratings+=(users_correlation.get(j).get_correlation())*
+                           ((users_correlation.get(j).get_user2().get_specific_rating(index)-users_correlation.get(j).get_user2().get_mean()));
+                    
+                 //   System.out.println("STD: "+ users_correlation.get(j).get_user2().get_std());
                     sum_correlation+=Math.abs(users_correlation.get(j).get_correlation());
                     break;
                 }
@@ -366,9 +318,13 @@ public class PermissionRecommender {
             }
         }
       //  System.out.println("Correlation: "+ sum_correlation_ratings+ ", Sum: "+sum_correlation);
-        predicted_rating=active_user.get_mean()+(sum_correlation_ratings/sum_correlation);
-        //Random rn=new Random();
-       // predicted_rating=rn.nextInt(7)+1;
+        //predicted_rating=active_user.get_mean()+(active_user.get_std()*(sum_correlation_ratings/sum_correlation));
+        
+        predicted_rating=active_user.get_mean()+((sum_correlation_ratings/sum_correlation));
+        
+       // Random Prediction 
+        Random rn=new Random();
+      // predicted_rating=rn.nextInt(7)+1;
         return predicted_rating;
     }
     
@@ -408,46 +364,11 @@ public class PermissionRecommender {
         double predicted_rating=rn.nextInt(7)+1;
         return predicted_rating;
     }
-    public static double get_item_item_correlation(int index1, int index2)
-    {
-        
-        double corr=0.0;
-     //   System.out.println("1: "+index1+ " 2: "+index2);
-        for(int j=0;j<items_correlation.size();j++)
-        {
-                // System.out.println("Neighbours Id: "+ neighbour_id+ "User-User Id: "+users_correlation.get(j).get_user2().get_user_id());
-            if((items_correlation.get(j).get_item1().get_id()==index1) && (items_correlation.get(j).get_item2().get_id()==index2))
-            {
-                corr=items_correlation.get(j).get_correlation();
-             //   System.out.println("Corr"+corr);
-            }
-        }
-
-        return corr;
-    }
+   
     
-    public static double predict_ratings_item_based(User_Ratings active_user, int index)
-    {
-        double predicted_rating=0.0;
-        double sum_correlation=0.0;
-        double sum_correlation_ratings=0.0;
-        int active_user_id=active_user.get_user_id();
-        for(int i=0;i<GlobalConstants.number_of_items;i++)
-        {
-            if(active_user.get_specific_rating(i)>0.0)
-            {
-                double corr=get_item_item_correlation(16+index, 16+i);
-                sum_correlation_ratings+=corr*active_user.get_specific_rating(i);
-                sum_correlation+=Math.abs(corr);
-            }
-            
-               //System.out.println("Out Index:"+j );
-            
-        }
-      //  System.out.println("Correlation: "+ sum_correlation_ratings+ ", Sum: "+sum_correlation);
-        predicted_rating=(sum_correlation_ratings/sum_correlation);
-        return predicted_rating;
-    }
+    //without clamping
+    
+    
     public static double leave_one_out_evaluation(int metric_type) throws IOException
     {
         double total_mae=0.0;
@@ -455,69 +376,39 @@ public class PermissionRecommender {
         double total_rmse=0.0;
         double item_rmse=0.0;
         
-   //     double random_total_mae=0.0;
-   //     double random_item_mae=0.0;
-   ///     double random_total_rmse=0.0;
-    //    double random_item_rmse=0.0;
+        double random_total_mae=0.0;
+        double random_item_mae=0.0;
+       double random_total_rmse=0.0;
+       double random_item_rmse=0.0;
         
         int tp=0;
         int tn=0;
         int fp=0;
         int fn=0;
         
-        FileWriter fw = new FileWriter("PredictedRatings_5.csv");
-        PrintWriter pw = new PrintWriter(fw);
-        
-        pw.print("User ID");
-        pw.print(",");
-        
-        pw.print("Item ID");
-        pw.print(",");
-        
-        pw.print("Item Name");
-        pw.print(",");
-        
-        pw.print("Actual Rating");
-        pw.print(",");
-        
-        pw.print("Predicted Rating");
-        pw.print(",");
-        
-        pw.println("MAE");
-        double p_level=4.3;
-        double a_level=4.0;
-        
-        int true_v=0;
-        int false_v=0;
                
         
         for(int i=0;i<allUserRatings.size();i++)
         {
             User_Ratings active_user=allUserRatings.get(i);
             item_mae=0.0;
-            for(int j=0;j<active_user.get_total_used();j++)
+            if(active_user.get_user_id()==74 || active_user.get_user_id()==77)
             {
-                int index=active_user.leave_nth_one(j);
-             //   System.out.println("Index "+ index);
+         //   for(int j=0;j<active_user.get_total_used();j++)
+            for(int j=0;j<15;j++)
+            {
+               // int index=active_user.leave_nth_one(j);
+                int index=j;
+           //     System.out.println("Index "+ index);
              //   System.out.println("Initial Mean"+active_user.get_mean());
-           //     System.out.println(active_user.get_user_id());
+                //System.out.println(active_user.get_user_id());
                 VariantClass var=new VariantClass(active_user.get_user_id(),index);
-                pw.print(active_user.get_user_id());
-                pw.print(",");
+              
                 double actual_value=active_user.get_specific_rating(index);
                 active_user.set_specific_rating(0.0, index);
-                System.out.println("Actual Rating "+actual_value);
+               System.out.println("Actual Rating "+actual_value);
                 var.add_actual_rating(actual_value);
-                pw.print(index+16);
-                pw.print(",");
-                
-             //   System.out.println("Item"+(index+16));
-                
-                pw.print(GlobalConstants.names.get_names(index));
-                pw.print(",");
-        
-                pw.print(actual_value);
-                pw.print(",");
+               
                 users_correlation.clear();
                 set_user_user(i,metric_type,index);
                 Neighbours nearest_set=users_nearest_neighbours.get(0);
@@ -526,365 +417,77 @@ public class PermissionRecommender {
                 predicted_rating=predict_ratings_based_on_similarity(active_user, nearest_set,index);
                 
             //    predicted_rating=predict_ratings_based_on_similarity_random(active_user, nearest_set, index);
-         //       double random_prediction=predict_ratings_based_on_similarity_random(active_user, nearest_set, index);
+              // double random_prediction=predict_ratings_based_on_similarity_random(active_user, nearest_set, index);
                 if(predicted_rating<1)
                     predicted_rating=1;
+                if(predicted_rating>7)
+                    predicted_rating=7.0;
                 var.add_predicted_rating(predicted_rating);
-               // System.out.println("Prediction:"+predicted_rating);
-                pw.print(predicted_rating);
-                pw.print(",");
-                
-                //double prediction_minimised=find_the_minimum(active_user,predicted_rating, index);
-               // System.out.println("New Prediction: "+prediction_minimised);
-                
-              //  if(prediction_minimised!=predicted_rating)
-               //     System.out.println("Minimized ");
-                
-                predicted_rating=find_the_minimum(active_user,predicted_rating, index);
+        //        System.out.println("Prediction:"+predicted_rating);
+              
+                if(GlobalConstants.clamping)
+                {
+                 predicted_rating=find_the_minimum(active_user,predicted_rating, index);
+                }
                 
                item_mae+=Math.abs(actual_value-predicted_rating);//predict_ratings_based_on_similarity(active_user, nearest_set,index));
                item_rmse+=(actual_value-predicted_rating)*(actual_value-predicted_rating);
                
-        //       random_item_mae+=Math.abs(actual_value-random_prediction);//predict_ratings_based_on_similarity(active_user, nearest_set,index));
-        //       random_item_rmse+=(actual_value-random_prediction)*(actual_value-random_prediction);
+           //    random_item_mae+=Math.abs(actual_value-random_prediction);//predict_ratings_based_on_similarity(active_user, nearest_set,index));
+            //   random_item_rmse+=(actual_value-random_prediction)*(actual_value-random_prediction);
                
-               pw.println(Math.abs(actual_value-predicted_rating));
-        
-                if(predicted_rating>=p_level && actual_value>=a_level )
-                {
-                    System.out.println("TP Actual: "+actual_value+" Prediction"+predicted_rating);
-                    tp++;
-                }
-                if(predicted_rating<p_level  && actual_value<a_level )
-                {
-                    System.out.println("TN Actual: "+actual_value+" Prediction"+predicted_rating);
-                    tn++;
-                }
-                if(predicted_rating>=p_level  && actual_value<a_level )
-                {
-                   System.out.println("FP Actual: "+actual_value+" Prediction"+predicted_rating);
-                    fp++;
-                }
-                if(predicted_rating<p_level  && actual_value>=a_level )
-                {
-                    System.out.println("FN Actual: "+actual_value+" Prediction"+predicted_rating);
-                    fn++;
-                }
-                
-                
-                
-                
-            //     print_nearest_neighbours();
-           //      System.out.println("Cosine Similarity ");
-           //     System.out.println("-------------------------------------------");
-          //     System.out.println("Predicted Rating By Average: "+predicted_rating);
-      //          System.out.println("Predicted rating By Correlation: "+predict_ratings_based_on_similarity(active_user, nearest_set,index));
-        //        System.out.println("-------------------------------------------");
+               
+   
+      
                 users_nearest_neighbours.clear();
                 generated_users.clear();
-           /*     System.out.println("Pearson Correlation ");
-                System.out.println("-------------------------------------------");
-                set_user_user(i,GlobalConstants.metric_pearson_corrlation);
-                nearest_set=users_nearest_neighbours.get(0);
-                predicted_rating=nearest_set.predict_average_rating(index);
-                System.out.println("Predicted Rating By Average: "+predicted_rating);
-                System.out.println("Predicted rating By Correlation: "+predict_ratings_based_on_similarity(active_user, nearest_set,index));
-                System.out.println("-------------------------------------------");
-                
-                System.out.println("Constrained Pearson Correlation ");
-                System.out.println("-------------------------------------------");
-                set_user_user(i,GlobalConstants.metric_pearson_corrlation);
-                nearest_set=users_nearest_neighbours.get(0);
-                predicted_rating=nearest_set.predict_average_rating(index);
-                System.out.println("Predicted Rating By Average: "+predicted_rating);
-                System.out.println("Predicted rating By Correlation: "+predict_ratings_based_on_similarity(active_user, nearest_set,index));
-                System.out.println("-------------------------------------------");
-              // System.out.println(active_user.get_specific_rating(index));*/
+    
                 
                 active_user.set_specific_rating(actual_value, index);
                 variant.add(var);
                // System.out.println(active_user.get_specific_rating(index));
             }
+        }
             
          //   System.out.println("Id: "+active_user.get_user_id()+", Used Items "+active_user.get_total_used());
-      //      System.out.println("MAE "+item_mae);
+         //   System.out.println("MAE "+item_mae);
             item_mae=item_mae/(double)active_user.get_total_used();
             item_rmse=item_rmse/(double)active_user.get_total_used();
             
-      //      random_item_mae=random_item_mae/(double)active_user.get_total_used();
-      //      random_item_rmse=random_item_rmse/(double)active_user.get_total_used();
+           // random_item_mae=random_item_mae/(double)active_user.get_total_used();
+          //  random_item_rmse=random_item_rmse/(double)active_user.get_total_used();
             
             total_mae+=item_mae;
             total_rmse+=item_rmse;
             
-  //          random_total_mae+=random_item_mae;
-    //        random_total_rmse+=random_item_rmse;
-        //   System.out.println("Total MAE "+total_mae);
-        //   System.out.println("Total RMSE "+total_rmse);
-           
-       //    System.out.println("Random Total MAE "+random_total_mae);
-     //      System.out.println("Random Total RMSE "+random_total_rmse);
+          //  random_total_mae+=random_item_mae;
+         //  random_total_rmse+=random_item_rmse;
             
         }
         
         
-       // total_mae=total_mae/(allUserRatings.size());
-       // System.out.println(allUserRatings.size());
-        System.out.println("Total RMSE "+Math.sqrt(total_rmse/(allUserRatings.size())));
-       System.out.println("Total MAE "+(total_mae/(allUserRatings.size())));
-       
-     //  System.out.println("Total Random RMSE "+Math.sqrt(random_total_rmse/(allUserRatings.size())));
-    //   System.out.println("Total Random MAE "+(random_total_mae/(allUserRatings.size())));
+        total_mae=total_mae/(allUserRatings.size());
+     //    System.out.printf(" MAE %.3f, RMSE %.3f ",(total_mae), Math.sqrt(total_rmse/(allUserRatings.size())));
+         System.out.println();
+         
+       //  System.out.println("Total RMSE: "+Math.sqrt(total_rmse/(allUserRatings.size())));
+    
        
      //  return total_mae/(allUserRatings.size());
-       System.out.println("TP: "+tp+", FP: "+fp+" TN: "+tn+", FN: "+fn);
+     //  System.out.println("TP: "+tp+", FP: "+fp+" TN: "+tn+", FN: "+fn);
        double tpr=(double)(tp/(double)(tp+fp));
        double tnr=(double)(tp/(double)(tp+fn));
        double accu=(double)((tp+tn)/(double)(tp+tn+fp+fn));
-       System.out.println("TPR: "+tpr);
-       System.out.println("TNR: "+tnr);
-       System.out.println("Accuracy: "+accu);
+
        
-       System.out.println("True: "+ true_v+ ", False: "+false_v);
+   //    System.out.println("True: "+ true_v+ ", False: "+false_v);
        
-       //Close the Print Writer
-        pw.close();
-        
-        //Close the File Writer
-        fw.close();      
+       //Close the Print Writer   
+       //return total_mae;
       return Math.sqrt(total_rmse/(allUserRatings.size()));
     }
-      public static double leave_one_out_evaluation_new(int metric_type) throws IOException
-    {
-        double total_mae=0.0;
-        double item_mae=0.0;
-        double total_rmse=0.0;
-        double item_rmse=0.0;
-        
-   //     double random_total_mae=0.0;
-   //     double random_item_mae=0.0;
-   ///     double random_total_rmse=0.0;
-    //    double random_item_rmse=0.0;
-        
-        int tp=0;
-        int tn=0;
-        int fp=0;
-        int fn=0;
-        
-        FileWriter fw = new FileWriter("PredictedRatings_5.csv");
-        PrintWriter pw = new PrintWriter(fw);
-        
-        pw.print("User ID");
-        pw.print(",");
-        
-        pw.print("Item ID");
-        pw.print(",");
-        
-        pw.print("Item Name");
-        pw.print(",");
-        
-        pw.print("Actual Rating");
-        pw.print(",");
-        
-        pw.print("Predicted Rating");
-        pw.print(",");
-        
-        pw.println("MAE");
-        double p_level=4.3;
-        double a_level=4.0;
-        
-        double max_pred=0.0;
-        int max_index=0;
-        
-        int true_v=0;
-        int false_v=0;
-               
-        
-        for(int i=0;i<allUserRatings.size();i++)
-        {
-            User_Ratings active_user=allUserRatings.get(i);
-            item_mae=0.0;
-            max_pred=0.0;
-            max_index=-1;
-            System.out.println("User ID: "+active_user.get_user_id());
-            for(int j=0;j<active_user.get_total_used();j++)
-            {
-                int index=active_user.leave_nth_one(j);
-            //    System.out.println("Index "+ index);
-             //   System.out.println("Initial Mean"+active_user.get_mean());
-              //  System.out.println(active_user.get_user_id());
-                pw.print(active_user.get_user_id());
-                pw.print(",");
-                double actual_value=active_user.get_specific_rating(index);
-                active_user.set_specific_rating(0.0, index);
-            //    System.out.println("Actual Rating "+actual_value);
-                pw.print(index+16);
-                pw.print(",");
-                
-             //   System.out.println("Item"+(index+16));
-                
-                pw.print(GlobalConstants.names.get_names(index));
-                pw.print(",");
-        
-                pw.print(actual_value);
-                pw.print(",");
-                users_correlation.clear();
-                set_user_user(i,metric_type,index);
-                Neighbours nearest_set=users_nearest_neighbours.get(0);
-                //print_nearest_neighbours();
-                double predicted_rating=nearest_set.predict_average_rating(index);
-                predicted_rating=predict_ratings_based_on_similarity(active_user, nearest_set,index);
-                if(predicted_rating<1)
-                    predicted_rating=1;
-                
-                if(predicted_rating>max_pred)
-                {
-                    max_pred=predicted_rating;
-                    max_index=index;
-                }
 
-                pw.print(predicted_rating);
-                pw.print(",");
-   
-                
-                predicted_rating=find_the_minimum(active_user,predicted_rating, index);
-                
-               item_mae+=Math.abs(actual_value-predicted_rating);//predict_ratings_based_on_similarity(active_user, nearest_set,index));
-               item_rmse+=(actual_value-predicted_rating)*(actual_value-predicted_rating);
-               
-               pw.println(Math.abs(actual_value-predicted_rating));
   
-                users_nearest_neighbours.clear();
-                generated_users.clear();
-
-                active_user.set_specific_rating(actual_value, index);
-               // System.out.println(active_user.get_specific_rating(index));
-            }
-            
-            System.out.println("Max_Predict:"+max_pred+ ", Actual: "+active_user.get_specific_rating(max_index)+ ", Item: "+GlobalConstants.names.get_names(max_index));
-            if(active_user.get_specific_rating(max_index)>=4.0)
-                true_v++;
-            else
-            {
-                if(max_pred>=4.0)
-                    false_v++;
-                else
-                    true_v++;
-            }
-            
-
-            item_mae=item_mae/(double)active_user.get_total_used();
-            item_rmse=item_rmse/(double)active_user.get_total_used();
-            
-      //      random_item_mae=random_item_mae/(double)active_user.get_total_used();
-      //      random_item_rmse=random_item_rmse/(double)active_user.get_total_used();
-            
-            total_mae+=item_mae;
-            total_rmse+=item_rmse;
-
-        }
-        System.out.println("Success: "+ true_v+ ",Failure: "+false_v);
-        
-      
-        pw.close();
-        
-        //Close the File Writer
-        fw.close();      
-      return Math.sqrt(total_rmse/(allUserRatings.size()));
-    }
-    
-     public static double leave_one_out_evaluation_item()
-    {
-        double total_mae=0.0;
-        double item_mae=0.0;
-        double total_rmse=0.0;
-        double item_rmse=0.0;
-        int tp=0;
-        int tn=0;
-        int fp=0;
-        int fn=0;
-        for(int i=0;i<allUserRatings.size();i++)
-        {
-            User_Ratings active_user=allUserRatings.get(i);
-            item_mae=0.0;
-            for(int j=0;j<active_user.get_total_used();j++)
-            {
-                int index=active_user.leave_nth_one(j);
-          //      System.out.println("Index "+ index);
-            //    System.out.println(active_user.get_user_id());
-                double actual_value=active_user.get_specific_rating(index);
-                active_user.set_specific_rating(0.0, index);
-                addItem_ratings();
-     //           System.out.println("Actual Rating "+actual_value);
-                items_correlation.clear();
-                set_item_item();
-              //  Neighbours nearest_set=users_nearest_neighbours.get(0);
-          //      print_nearest_neighbours();
-                //double predicted_rating=nearest_set.predict_average_rating(index);
-               double  predicted_rating=predict_ratings_item_based(active_user, index);
-               item_mae+=Math.abs(actual_value-predicted_rating);//predict_ratings_based_on_similarity(active_user, nearest_set,index));
-               item_rmse+=(actual_value-predicted_rating)*(actual_value-predicted_rating);
-                if(predicted_rating>=4.0 && actual_value>=4.0)
-                    tp++;
-                if(predicted_rating<4.0 && actual_value<4.0)
-                    tn++;
-                if(predicted_rating>=4.0 && actual_value<4.0)
-                    fp++;
-                if(predicted_rating<4.0 && actual_value>=4.0)
-                    fn++;
-                
-                
-                
-            //     print_nearest_neighbours();
-           //      System.out.println("Cosine Similarity ");
-           //     System.out.println("-------------------------------------------");
-         //      System.out.println("Predicted Rating By Average: "+predicted_rating);
-      //          System.out.println("Predicted rating By Correlation: "+predict_ratings_based_on_similarity(active_user, nearest_set,index));
-        //        System.out.println("-------------------------------------------");
-                users_nearest_neighbours.clear();
-                generated_users.clear();
-           /*     System.out.println("Pearson Correlation ");
-                System.out.println("-------------------------------------------");
-                set_user_user(i,GlobalConstants.metric_pearson_corrlation);
-                nearest_set=users_nearest_neighbours.get(0);
-                predicted_rating=nearest_set.predict_average_rating(index);
-                System.out.println("Predicted Rating By Average: "+predicted_rating);
-                System.out.println("Predicted rating By Correlation: "+predict_ratings_based_on_similarity(active_user, nearest_set,index));
-                System.out.println("-------------------------------------------");
-                
-                System.out.println("Constrained Pearson Correlation ");
-                System.out.println("-------------------------------------------");
-                set_user_user(i,GlobalConstants.metric_pearson_corrlation);
-                nearest_set=users_nearest_neighbours.get(0);
-                predicted_rating=nearest_set.predict_average_rating(index);
-                System.out.println("Predicted Rating By Average: "+predicted_rating);
-                System.out.println("Predicted rating By Correlation: "+predict_ratings_based_on_similarity(active_user, nearest_set,index));
-                System.out.println("-------------------------------------------");
-              // System.out.println(active_user.get_specific_rating(index));*/
-                
-                active_user.set_specific_rating(actual_value, index);
-               // System.out.println(active_user.get_specific_rating(index));
-            }
-            
-         //   System.out.println("Id: "+active_user.get_user_id()+", Used Items "+active_user.get_total_used());
-            System.out.println("MAE "+item_mae);
-            item_mae=item_mae/(double)active_user.get_total_used();
-            item_rmse=item_rmse/(double)active_user.get_total_used();
-            
-            total_mae+=item_mae;
-            total_rmse+=item_rmse;
-            
-           System.out.println("Total MAE "+total_mae);
-        }
-        System.out.println("TP: "+tp+", FP: "+fp+" TN: "+tn+", FN: "+fn);
-        
-  //      total_mae=total_mae/(allUserRatings.size());
-     //   System.out.println(allUserRatings.size());
-        System.out.println("Total RMSE "+Math.sqrt(total_rmse/(allUserRatings.size())));
-       System.out.println("Total MAE "+(total_mae/(allUserRatings.size())));
-       
-       return total_mae;
-    }
     
      
     public static  void generate_lattice()
@@ -979,40 +582,462 @@ public class PermissionRecommender {
         
     }
     
-    
-    
-    public static void calculate_avg_std()
+    public static UserVariant get_user_variant2(int uId, int no_of_permission,double threshold)
     {
-        
-        double sum_std=0.0;
-        for(int i=0;i<allUserRatings.size();i++)
+        UserVariant uv=new UserVariant(uId);
+        uv.set_threshold(threshold);
+        uv.set_topN(1);
+        Vector <VariantClass> random_variant=new Vector<VariantClass>();
+        int max_index=-1;
+        int total_acceptable=0;
+        int total_ratings=0;
+        for(int i=0;i<variant.size();i++)
         {
-            sum_std+=allUserRatings.get(i).get_std();
-            System.out.println("STD:"+allUserRatings.get(i).get_std());
+            VariantClass var=variant.get(i);
+            
+            if(var.user_id==uId && var.no_of_permissions_removed>=no_of_permission)
+            {
+                uv.set_should_retrieve(var.isAcceptable);
+                if(uv.set_max(var.predicted_rating, var.item_id-16, var.actual_rating, var.isAcceptable))
+                    max_index=i;
+                random_variant.add(var);
+                total_acceptable+=var.isAcceptable;
+                total_ratings++;
+            //    System.out.println("-------------------------------------------");
+             //   System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
+             //   System.out.println("-------------------------------------------");
+             //   var.print();
+            }
         }
         
-        System.out.println("Avg STD: "+sum_std/allUserRatings.size());
+             if((double)total_acceptable/(double)total_ratings>0.3 &&  (double)total_acceptable/(double)total_ratings<0.8  )
+                uv.should_count=1;
+          System.out.println("UserID "+uId+" Total Acceptable: "+(double)total_acceptable/(double)total_ratings+" Total Ratings: "+total_ratings+ " Count: "+uv.should_count);
+   
+    //    System.out.println("UID: "+uId+" Max_Index: "+ max_index);
+        VariantClass max_var;
+      
+      /*   System.out.println("-------------------------------------------");
+             System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
+             System.out.println(" Total Permission Set:  "+random_variant.size());
+             System.out.println("-------------------------------------------");*/
+          // Random 
+       Random rn=new Random();
+       
+     
+       if(random_variant.size()>0)
+       {
+            VariantClass random_var=random_variant.get(rn.nextInt(random_variant.size()));
+            
+             //random_var.print();
+       // uv.set_max_random(random_var.predicted_rating, random_var.item_id-16, random_var.actual_rating, random_var.isAcceptable);
+       }
+        uv.check_relevance();
+      // uv.print();
+        return uv;
+        
     }
+    public static UserVariant get_user_variant1(int uId, int no_of_permission,double threshold)
+    {
+        UserVariant uv=new UserVariant(uId);
+        uv.set_threshold(threshold);
+        Vector <VariantClass> random_variant=new Vector<VariantClass>();
+        int no_of_permission_set=0;
+        
+        for(int i=0;i<variant.size();i++)
+        {
+            VariantClass var=variant.get(i);
+            if(var.user_id==uId && var.no_of_permissions_removed==no_of_permission)
+            {
+                uv.set_should_retrieve(var.isAcceptable);
+                uv.set_max(var.predicted_rating, var.item_id-16, var.actual_rating, var.isAcceptable);
+                random_variant.add(var);
+                no_of_permission_set++;
+            //    System.out.println("-------------------------------------------");
+             //   System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
+             //   System.out.println("-------------------------------------------");
+             //   var.print();
+            }
+            if(var.user_id==uId)
+            {
+               
+                random_variant.add(var);
+               
+            //    System.out.println("-------------------------------------------");
+             //   System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
+             //   System.out.println("-------------------------------------------");
+             //   var.print();
+            }
+        }
+         /*   System.out.println("-------------------------------------------");
+             System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
+             System.out.println(" Total Permission Set:  "+no_of_permission_set);
+             System.out.println("-------------------------------------------");*/
+        
+       
+        
+     /*  for(int j=0;j<random_variant.size();j++)
+        {
+            random_variant.get(j).print();
+            System.out.println("-------------------------------------------");
+            
+        }*/
+        
+        
+        // Random 
+       Random rn=new Random();
+       
+     
+       if(random_variant.size()>0)
+       {
+            VariantClass random_var=random_variant.get(rn.nextInt(random_variant.size()));
+       // random_var.print();
+        uv.set_max_random(random_var.predicted_rating, random_var.item_id-16, random_var.actual_rating, random_var.isAcceptable);
+       }
+       //uv.set_max_random(, uId, threshold, uId);
+        uv.check_relevance();
+        
+    //   // System.out.println("-------------------------------------------");
+    //    System.out.println("Max");
+    //     uv.print();
+    //     System.out.println("-------------------------------------------");
+        return uv;
+        
+    }
+    public static void correctness_variant2() throws IOException
+    {
+        FileWriter fw = new FileWriter(filename_variant2_precision);
+        PrintWriter pw = new PrintWriter(fw);
+        pw.print("Threshold");
+        pw.print(",");
+        
+        pw.print("1 Permission");
+        pw.print(",");
+        
+        pw.print("2 Permission");
+        pw.print(",");
+        
+        pw.print("3 Permission");
+        pw.print(",");
+        
+        pw.print("4 Permission");
+        pw.print(",");
+        
+        pw.println("Combined");
+                
+        FileWriter fw2 = new FileWriter(filename_variant2_recall);
+        PrintWriter pw2 = new PrintWriter(fw2);
+        pw2.print("Threshold");
+        pw2.print(",");
+        
+        pw2.print("1 Permission");
+        pw2.print(",");
+        
+        pw2.print("2 Permission");
+        pw2.print(",");
+        
+        pw2.print("3 Permission");
+        pw2.print(",");
+        
+        pw2.print("4 Permission");
+        pw2.print(",");
+        
+        pw2.println("Combined");
+        
+        
+        
+   for(double thresholdT=4.0;thresholdT<4.5;thresholdT+=0.5)
+        {
+            double precision=0;
+            double recall=0;
+            double combined_pr=0;
+            double combined_recall=0;
+            pw.print(String.format("%.2f", thresholdT));
+            pw.print(",");
+
+            pw2.print(String.format("%.2f", thresholdT));
+            pw2.print(",");
+            System.out.println("-------------------------------------------");
+            System.out.println("Threshold : "+String.format("%.2f", thresholdT));
+            System.out.println("-------------------------------------------");
+            for(int p=1;p<4;p++)
+            {
+                double total_precision=0.0;
+                double total_recall=0.0;
+                int all_total=0;
+                for(int k=0;k<1;k++)
+                {
+                    int total_should_retrive_relevent=0;
+                    int total_retrieved=0;
+                    int total_relevent=0;
+                    
+                    
+                    for(int i=0;i<allUserRatings.size();i++)
+                    {
+                        User_Ratings active_user=allUserRatings.get(i);
+                        UserVariant uv=get_user_variant2(active_user.get_user_id(), p,thresholdT);
+                        if(uv.should_count==1)
+                        {
+                        total_should_retrive_relevent+=uv.should_retreive;
+                        total_retrieved+=uv.retrieved;
+                        total_relevent+=uv.relevent;
+                        }
+            //      uv.print();
+                    }
+                    all_total+=total_relevent;
+                            
+                   System.out.println("-------------------------------------------");
+                    System.out.println("Permissions Removed: "+p);
+                    System.out.println("-------------------------------------------");
+                    System.out.println("Total Should Retrieved: "+total_should_retrive_relevent); 
+                    System.out.println("Total Retrieved: "+total_retrieved);
+                    System.out.println("Total Relevent : "+total_relevent);
+
+
+                    if(total_retrieved!=0) //Buggy
+                    {
+                        precision= (double)total_relevent/(double)total_retrieved;
+                        
+                    }
+                    if(total_should_retrive_relevent!=0)
+                    {
+                        recall=(double)total_relevent/(double)total_should_retrive_relevent;
+                        
+                    }
+                    if(total_retrieved==0)
+                    {
+                        precision=1.0;
+                        recall=0;
+
+                    }
+                    total_precision+=precision;
+                    total_recall+=recall;
+                    
+                    
+                }
+                System.out.println("Average: "+all_total/10);
+                
+                pw.print(total_precision/10.0);
+                pw.print(",");
+
+                pw2.print(total_recall/10.0);
+                pw2.print(",");
+
+                 
+             
+                System.out.println("Precision: "+total_precision/10.0+ ", Recall: "+total_recall/10.0);
+                combined_pr+=total_precision/10.0;
+                combined_recall+=total_recall/10.0;
+
+            }
+            
+            pw.println(combined_pr/4.0);
+            pw2.println(combined_recall/4.0);
+         //   System.out.println("Combined Precision: "+combined_pr/4.0+ ", Combined Recall: "+combined_recall/4.0);
+        }
+        
+        pw.close();
+        
+        //Close the File Writer
+        fw.close(); 
+        
+        pw2.close();
+        
+        //Close the File Writer
+        fw2.close(); 
+             
+       
+        
+        
+    }
+    public static void correctness_variant1() throws IOException
+    {
+        FileWriter fw = new FileWriter(filename_variant1_precision);
+        PrintWriter pw = new PrintWriter(fw);
+        pw.print("Threshold");
+        pw.print(",");
+        
+        pw.print("1 Permission");
+        pw.print(",");
+        
+        pw.print("2 Permission");
+        pw.print(",");
+        
+        pw.print("3 Permission");
+        pw.print(",");
+        
+        pw.print("4 Permission");
+        pw.print(",");
+        
+        pw.println("Combined");
+                
+        FileWriter fw2 = new FileWriter(filename_variant1_recall);
+        PrintWriter pw2 = new PrintWriter(fw2);
+        pw2.print("Threshold");
+        pw2.print(",");
+        
+        pw2.print("1 Permission");
+        pw2.print(",");
+        
+        pw2.print("2 Permission");
+        pw2.print(",");
+        
+        pw2.print("3 Permission");
+        pw2.print(",");
+        
+        pw2.print("4 Permission");
+        pw2.print(",");
+        
+        pw2.println("Combined");
+        
+        
+        
+        for(double thresholdT=1.0;thresholdT<7.0;thresholdT+=0.1)
+        {
+            double precision=0;
+            double recall=0;
+            double combined_pr=0;
+            double combined_recall=0;
+            pw.print(String.format("%.2f", thresholdT));
+            pw.print(",");
+
+            pw2.print(String.format("%.2f", thresholdT));
+            pw2.print(",");
+            System.out.println("-------------------------------------------");
+            System.out.println("Threshold : "+String.format("%.2f", thresholdT));
+            System.out.println("-------------------------------------------");
+            for(int p=1;p<3;p++)
+            {
+                double total_precision=0.0;
+                double total_recall=0.0;
+                for(int k=0;k<10;k++)
+                {
+                    int total_should_retrive_relevent=0;
+                    int total_retrieved=0;
+                    int total_relevent=0;
+                    
+                    for(int i=0;i<allUserRatings.size();i++)
+                    {
+                        User_Ratings active_user=allUserRatings.get(i);
+                        UserVariant uv=get_user_variant1(active_user.get_user_id(), p,thresholdT);
+                        total_should_retrive_relevent+=uv.should_retreive;
+                        total_retrieved+=uv.retrieved;
+                        total_relevent+=uv.relevent;
+            //      uv.print();
+                    }
+                /*   System.out.println("-------------------------------------------");
+                    System.out.println("Permissions Removed: "+p);
+                    System.out.println("-------------------------------------------");
+                    System.out.println("Total Should Retrieved: "+total_should_retrive_relevent); 
+                    System.out.println("Total Retrieved: "+total_retrieved);
+                    System.out.println("Total Relevent : "+total_relevent);*/
+
+
+                    if(total_retrieved!=0) //Buggy
+                    {
+                        precision= (double)total_relevent/(double)total_retrieved;
+                        
+                    }
+                    if(total_should_retrive_relevent!=0)
+                    {
+                        recall=(double)total_relevent/(double)total_should_retrive_relevent;
+                        
+                    }
+                    if(total_retrieved==0)
+                    {
+                        precision=1.0;
+                        recall=0;
+
+                    }
+                    total_precision+=precision;
+                    total_recall+=recall;
+                    
+                    
+                }
+                
+                pw.print(total_precision/10.0);
+                pw.print(",");
+
+                pw2.print(total_recall/10.0);
+                pw2.print(",");
+
+                 
+             
+                System.out.println("Precision: "+total_precision/10.0+ ", Recall: "+total_recall/10.0);
+                combined_pr+=total_precision/10.0;
+                combined_recall+=total_recall/10.0;
+
+            }
+            
+            pw.println(combined_pr/4.0);
+            pw2.println(combined_recall/4.0);
+            System.out.println("Combined Precision: "+combined_pr/4.0+ ", Combined Recall: "+combined_recall/4.0);
+        }
+        
+        pw.close();
+        
+        //Close the File Writer
+        fw.close(); 
+        
+        pw2.close();
+        
+        //Close the File Writer
+        fw2.close(); 
+             
+       
+        
+        
+    }
+    
     public static void main(String[] args) throws IOException {
         // TODO code application logic here
         
         set_item_name();
-        readFile(true, "result_april_17.csv");
+        readFile(true, "result_july_15.csv");
         generate_lattice();
-        //print_data();
+       // print_data();
         //set_user_user(0,GlobalConstants.metric_pearson_corrlation);
       //  print_nearest_neighbours();
         
        
         double error=0;
-        error=leave_one_out_evaluation(GlobalConstants.metric_cosine_similarity);
+        for(int i=5;i<6;i++)
+        {
+            GlobalConstants.number_of_neighbours=i;
+            
+            GlobalConstants.clamping=false;
+         //   System.out.print("NN: "+i+ " Without Clamping");
+            error+=leave_one_out_evaluation(GlobalConstants.metric_cosine_similarity);
+            
+          //  GlobalConstants.clamping=true;
+         //   System.out.print("NN: "+i+ " With Clamping");
+         //   error=leave_one_out_evaluation(GlobalConstants.metric_cosine_similarity);
+            
+         //   System.out.println("-------------------------------------------");
+            
+        }
+       // correctness_variant2();
+        //correctness_variant1();
      //   error=leave_one_out_evaluation_new(GlobalConstants.metric_cosine_similarity);
-        
+        int tot_ac=0;
+        int tot_fault=0;
         for(int l=0;l<variant.size();l++)
         {
+        //  System.out.println("Index "+ l);
+          if(variant.get(l).user_id==74 || variant.get(l).user_id==77)
+          {
             variant.get(l).print();
+          }
+            tot_ac=variant.get(l).predicted_rating>=4.0?tot_ac+1:tot_ac;
+            tot_fault=variant.get(l).predicted_rating>=4.0 && variant.get(l).isAcceptable==1?tot_fault+1:tot_fault;
+            
+            
+         
+                
         }
         
+      //  System.out.println("Total: "+tot_ac+ " Fault: "+tot_fault);
+
        for(int k=0;k<10;k++)
         {
         //    
@@ -1020,11 +1045,57 @@ public class PermissionRecommender {
         }
        
        
-     //  System.out.println("K-fold result: "+error/10.0);
+      System.out.println("K-fold result: "+error/10.0);
       //  initialize_items();
        // addItem_ratings();
         //set_item_item();
      //   leave_one_out_evaluation_item();
-       //calculate_avg_std();
+      // calculate_avg_std();
     }
+    
+    
+    
+    
+    
+  
+    
+    // Item Based CF
+   
+    //Printing Stuffs
+    public static void print_data()
+    {
+        for(int j=0;j<allUserRatings.size();j++)
+        {
+            User_Ratings d=allUserRatings.get(j);
+            System.out.println("User: "+j);
+            System.out.println("User Id:  "+d.get_user_id());
+            for(int i=0;i<GlobalConstants.number_of_items;i++)
+            {
+               // if(i==0)
+                   // System.out.println(names.get_names(i)+" "+d.get_user_id());
+                //else
+                System.out.println(GlobalConstants.names.get_names(i)+" "+d.get_specific_rating(i));
+            }
+            System.out.println("Average: "+d.get_mean());
+            System.out.println("-------------------------------------------");
+        }
+    }
+    public static void print_nearest_neighbours()
+    {
+        for(int i=0;i<users_nearest_neighbours.size();i++)
+        {
+         //   System.out.println("Active User: "+ users_nearest_neighbours.get(i).get_active_user_id());
+             System.out.println("-------------------------------------------");
+             for(int j=0;j<GlobalConstants.number_of_neighbours;j++)
+             {
+                 System.out.println("Neighbour "+ j+ " : " + users_nearest_neighbours.get(i).get_neighbours_id(j));
+             }
+             System.out.println("-------------------------------------------");
+            
+        }
+    }
+    
+           
+    
+    
 }

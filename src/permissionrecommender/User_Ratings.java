@@ -78,14 +78,17 @@ public class User_Ratings {
     public void calculate_std()
     {
         double ssq=0;
+        int total_rating=0;
         for(int i=0;i<total_items;i++)
         {
             if(rating[i]>0.0)
             {
                 ssq+=(rating[i]-mean_rating)* (rating[i]-mean_rating);
+                total_rating++;
             }
         }
-        std=Math.sqrt(ssq/total_items);
+        std=Math.sqrt(ssq/(total_rating-1));
+      
     }
     
       
@@ -150,6 +153,7 @@ public class User_Ratings {
     {
         this.rating[index]=rating;
         calculate_mean();
+        calculate_std();
     }
     
     public double get_specific_rating(int index)
