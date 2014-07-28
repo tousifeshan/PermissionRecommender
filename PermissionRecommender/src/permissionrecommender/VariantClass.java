@@ -4,6 +4,9 @@
  */
 package permissionrecommender;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 /**
  *
  * @author touahmed
@@ -14,6 +17,7 @@ public class VariantClass {
     int no_of_permissions_removed;
     double actual_rating;
     int isAcceptable;
+    
     double predicted_rating;
     
     public VariantClass()
@@ -54,13 +58,18 @@ public class VariantClass {
         predicted_rating=predicted;
     }
     
-    public void print()
+    public void print() throws IOException
     {
+       // System.out.println(user_id+ ","+ item_id+ ","+ GlobalConstants.names.get_names(item_id-16)+","+no_of_permissions_removed+","+actual_rating+","+isAcceptable+","+predicted_rating+","+pr_ac);
+        System.out.println("-------------------------------------------");
         System.out.println("User_id: "+user_id);
         System.out.println("Item_id: "+item_id+", Item Name: "+GlobalConstants.names.get_names(item_id-16));
         System.out.println("No of Permission Removed: "+no_of_permissions_removed);
         System.out.println("Actual Rating: "+actual_rating+", Acceptable: "+isAcceptable);
-        System.out.println("Predicted Rating: "+ predicted_rating);
+        String pr_ac=predicted_rating>=5.0?"Yes":"No";
+        System.out.println("Predicted Rating: "+ predicted_rating+ ", Acceptable: "+ pr_ac );
+        System.out.println("-------------------------------------------");
+    //  System.out.println(user_id+ ","+ item_id+ ","+ GlobalConstants.names.get_names(item_id-16)+","+no_of_permissions_removed+","+actual_rating+","+isAcceptable+","+predicted_rating+","+pr_ac);
         
     }
 }
