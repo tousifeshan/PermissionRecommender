@@ -395,10 +395,10 @@ public class PermissionRecommender {
             if(active_user.get_user_id()==74 || active_user.get_user_id()==77)
             {
          //   for(int j=0;j<active_user.get_total_used();j++)
-            for(int j=0;j<15;j++)
+            for(int j=0;j<active_user.get_total_used();j++)
             {
                // int index=active_user.leave_nth_one(j);
-                int index=j;
+                int index=0;
            //     System.out.println("Index "+ index);
              //   System.out.println("Initial Mean"+active_user.get_mean());
                 //System.out.println(active_user.get_user_id());
