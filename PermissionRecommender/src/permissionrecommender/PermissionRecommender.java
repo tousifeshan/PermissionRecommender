@@ -177,7 +177,7 @@ public class PermissionRecommender {
             
             // Sorting the users based on similarity
             sorted_map.sortMap();
-      //      System.out.println("Size: "+sorted_map.get_nearest_ids().size());
+  //          System.out.println("Size: "+sorted_map.get_nearest_ids().size());
           //  add_random_neighbours(user_1,sorted_map.get_nearest_ids()); // random neighbor
          add_neighbours(user_1,sorted_map.get_nearest_ids());
         //    add_neighbours_from_genrated(user_1,sorted_map.get_nearest_ids());
@@ -190,7 +190,7 @@ public class PermissionRecommender {
             
      //       System.out.println("Sorted Map");
       //      System.out.println("-----------------------------------------------------------------------------------");
-          //  sorted_map.printeSortedMap();
+            //sorted_map.printeSortedMap();
             //Collections.sort(users_correlation);
          //   SortByMetric sorted_map=new SortByMetric(user_1.get_user_id());
       //      System.out.println("User Correlation Size"+ users_correlation.size());
@@ -392,13 +392,13 @@ public class PermissionRecommender {
         {
             User_Ratings active_user=allUserRatings.get(i);
             item_mae=0.0;
-            if(active_user.get_user_id()==74 || active_user.get_user_id()==77)
+            if(active_user.get_user_id()==56 )
             {
          //   for(int j=0;j<active_user.get_total_used();j++)
             for(int j=0;j<active_user.get_total_used();j++)
             {
-               // int index=active_user.leave_nth_one(j);
-                int index=0;
+                int index=active_user.leave_nth_one(j);
+              //  int index=0;
            //     System.out.println("Index "+ index);
              //   System.out.println("Initial Mean"+active_user.get_mean());
                 //System.out.println(active_user.get_user_id());
@@ -406,13 +406,13 @@ public class PermissionRecommender {
               
                 double actual_value=active_user.get_specific_rating(index);
                 active_user.set_specific_rating(0.0, index);
-               System.out.println("Actual Rating "+actual_value);
+             //  System.out.println("Actual Rating "+actual_value);
                 var.add_actual_rating(actual_value);
                
                 users_correlation.clear();
                 set_user_user(i,metric_type,index);
                 Neighbours nearest_set=users_nearest_neighbours.get(0);
-                //print_nearest_neighbours();
+                print_nearest_neighbours();
                 double predicted_rating=nearest_set.predict_average_rating(index);
                 predicted_rating=predict_ratings_based_on_similarity(active_user, nearest_set,index);
                 
@@ -1001,7 +1001,7 @@ public class PermissionRecommender {
         
        
         double error=0;
-        for(int i=5;i<6;i++)
+        for(int i=3;i<4;i++)
         {
             GlobalConstants.number_of_neighbours=i;
             
@@ -1024,10 +1024,10 @@ public class PermissionRecommender {
         for(int l=0;l<variant.size();l++)
         {
         //  System.out.println("Index "+ l);
-          if(variant.get(l).user_id==74 || variant.get(l).user_id==77)
-          {
+         // if(variant.get(l).user_id==74 || variant.get(l).user_id==77)
+          //{
             variant.get(l).print();
-          }
+          //}
             tot_ac=variant.get(l).predicted_rating>=4.0?tot_ac+1:tot_ac;
             tot_fault=variant.get(l).predicted_rating>=4.0 && variant.get(l).isAcceptable==1?tot_fault+1:tot_fault;
             
