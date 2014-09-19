@@ -22,22 +22,12 @@ public class PermissionRecommender {
     public static Vector<User_Ratings> allUserRatings = new Vector<User_Ratings>();
     
     public static Vector<User_User> users_correlation=new Vector<User_User>();
-    public static Vector<ItemBased> items_correlation=new Vector<ItemBased>();
     public static Vector<Neighbours> users_nearest_neighbours=new Vector<Neighbours>();
-    public static Vector<User_Ratings> generated_users = new Vector<User_Ratings>();
     public static Vector<ItemClass> itemRatings = new Vector<ItemClass>();
     public static Vector<Lattice> lattice=new Vector<Lattice>();
     public static Vector<VariantClass> variant=new Vector<VariantClass>();
     
-    
-    public static String filename_variant1_precision="Variant1_precision_nn2_graph1_curve2_new.csv";
-    public static String filename_variant1_recall="Variant1_recall_nn2_graph1_curve2_new.csv";
-    public static String filename_variant2_precision="Variant2_precision_original.csv";
-    public static String filename_variant2_recall="Variant2_recall_original.csv";
-    
-    
    
-    
     /**
      * @param args the command line arguments
      */
@@ -82,37 +72,6 @@ public class PermissionRecommender {
     }
     
     
-    public static void addItem_ratings()
-    {
-        
-        for(int i=0;i<allUserRatings.size();i++)
-        {
-            User_Ratings userRating=allUserRatings.get(i);
-            for(int j=0;j<itemRatings.size();j++)
-            {
-                ItemClass item=itemRatings.get(j);
-                item.setRatiings(userRating.get_specific_rating(j), i);
-            }
-              
-            
-        }
-        
-    }
-    
-    public static void initialize_items()
-    {
-        int start=16;
-        for(int i=0;i<GlobalConstants.number_of_items;i++)
-        {
-            ItemClass item=new ItemClass(start+i,GlobalConstants.names.get_names(i),allUserRatings.size());
-            itemRatings.add(item);
-        }
-        
-     /*   for(int i=0;i<itemRatings.size();i++)
-        {
-            itemRatings.get(i).print_info();
-        }*/
-    }
     
     // Unnecessary
     public static void set_item_name()
@@ -211,34 +170,9 @@ public class PermissionRecommender {
         }
         return user;
     }
-    public static User_Ratings get_user_by_id_from_generated(int userId)
-    {
-        User_Ratings user=new User_Ratings();
-        for(int i=0;i<generated_users.size();i++)
-        {
-            if(generated_users.get(i).get_user_id()==userId)
-            {
-                user= generated_users.get(i);
-                break;
-            }
-        }
-        return user;
-    }
+ 
     
-    public static User_Ratings generated_user()
-    {
-        User_Ratings user=new User_Ratings(GlobalConstants.number_of_items);
-        Random rn=new Random();
-        user.set_user_id(rn.nextInt(500)+100);
-        for(int i=0;i<GlobalConstants.number_of_items;i++)
-        {
-            
-            int rating=rn.nextInt(5)+1;
-            user.set_specific_rating(rating, i);
-        }
-        return user;
-        
-    }
+   
     public static void add_neighbours(User_Ratings active_user,ArrayList<Integer> sorted_ids)
     {
         Neighbours nn=new Neighbours(active_user);
@@ -249,43 +183,9 @@ public class PermissionRecommender {
         }
         users_nearest_neighbours.add(nn);
     }
-    public static void add_neighbours_from_genrated(User_Ratings active_user,ArrayList<Integer> sorted_ids)
-    {
-        Neighbours nn=new Neighbours(active_user);
-        for(int i=0;i<GlobalConstants.number_of_neighbours;i++)
-        {
-            User_Ratings neighbour=get_user_by_id_from_generated(sorted_ids.get(i).intValue());
-            nn.add_nearest_neighbours(neighbour);
-        }
-        users_nearest_neighbours.add(nn);
-    }
+ 
     
-    public static void add_random_neighbours(User_Ratings active_user)
-    {
-        Neighbours nn=new Neighbours(active_user);
-        for(int i=0;i<GlobalConstants.number_of_neighbours;i++)
-        {
-            User_Ratings neighbour=generated_user();
-            nn.add_nearest_neighbours(neighbour);
-        }
-        users_nearest_neighbours.add(nn);
-    }
-    
-    public static void add_random_neighbours(User_Ratings active_user,ArrayList<Integer> sorted_ids)
-    {
-        Neighbours nn=new Neighbours(active_user);
-        Random rn=new Random();
-        for(int i=0;i<GlobalConstants.number_of_neighbours;i++)
-        {
-         //   System.out.println(rn.nextInt(sorted_ids.size()));
-            User_Ratings neighbour=get_user_by_id(sorted_ids.get( rn.nextInt(sorted_ids.size())).intValue());
-            
-            nn.add_nearest_neighbours(neighbour);
-        }
-        users_nearest_neighbours.add(nn);
-    }
-    
-    
+ 
     
     // Predict ratings using the similarity
     public static double predict_ratings_based_on_similarity(User_Ratings active_user,Neighbours nn, int index)
@@ -355,17 +255,7 @@ public class PermissionRecommender {
         return min;
     }
     
-    public static double predict_ratings_based_on_similarity_random(User_Ratings active_user,Neighbours nn, int index)
-    {
-        
-      //  System.out.println("Correlation: "+ sum_correlation_ratings+ ", Sum: "+sum_correlation);
-       // predicted_rating=active_user.get_mean()+(sum_correlation_ratings/sum_correlation);
-        Random rn=new Random();
-        double predicted_rating=rn.nextInt(7)+1;
-        return predicted_rating;
-    }
-   
-    
+
     //without clamping
     
     
@@ -392,16 +282,16 @@ public class PermissionRecommender {
         {
             User_Ratings active_user=allUserRatings.get(i);
             item_mae=0.0;
-            if(active_user.get_user_id()==56 )
-            {
-         //   for(int j=0;j<active_user.get_total_used();j++)
-            for(int j=0;j<active_user.get_total_used();j++)
+    //        if(active_user.get_user_id()==55 )
+      //      {
+           for(int j=0;j<active_user.get_total_used();j++)
+         //   for(int j=0;j<15;j++)
             {
                 int index=active_user.leave_nth_one(j);
               //  int index=0;
            //     System.out.println("Index "+ index);
              //   System.out.println("Initial Mean"+active_user.get_mean());
-                //System.out.println(active_user.get_user_id());
+            //    System.out.println(active_user.get_user_id());
                 VariantClass var=new VariantClass(active_user.get_user_id(),index);
               
                 double actual_value=active_user.get_specific_rating(index);
@@ -412,7 +302,7 @@ public class PermissionRecommender {
                 users_correlation.clear();
                 set_user_user(i,metric_type,index);
                 Neighbours nearest_set=users_nearest_neighbours.get(0);
-                print_nearest_neighbours();
+               print_nearest_neighbours();
                 double predicted_rating=nearest_set.predict_average_rating(index);
                 predicted_rating=predict_ratings_based_on_similarity(active_user, nearest_set,index);
                 
@@ -440,14 +330,14 @@ public class PermissionRecommender {
    
       
                 users_nearest_neighbours.clear();
-                generated_users.clear();
+//                generated_users.clear();
     
                 
                 active_user.set_specific_rating(actual_value, index);
                 variant.add(var);
                // System.out.println(active_user.get_specific_rating(index));
             }
-        }
+     //   }
             
          //   System.out.println("Id: "+active_user.get_user_id()+", Used Items "+active_user.get_total_used());
          //   System.out.println("MAE "+item_mae);
@@ -467,10 +357,10 @@ public class PermissionRecommender {
         
         
         total_mae=total_mae/(allUserRatings.size());
-     //    System.out.printf(" MAE %.3f, RMSE %.3f ",(total_mae), Math.sqrt(total_rmse/(allUserRatings.size())));
+         System.out.printf(" MAE %.3f, RMSE %.3f ",(total_mae), Math.sqrt(total_rmse/(allUserRatings.size())));
          System.out.println();
          
-       //  System.out.println("Total RMSE: "+Math.sqrt(total_rmse/(allUserRatings.size())));
+   //      System.out.println("Total RMSE: "+Math.sqrt(total_rmse/(allUserRatings.size())));
     
        
      //  return total_mae/(allUserRatings.size());
@@ -582,412 +472,8 @@ public class PermissionRecommender {
         
     }
     
-    public static UserVariant get_user_variant2(int uId, int no_of_permission,double threshold)
-    {
-        UserVariant uv=new UserVariant(uId);
-        uv.set_threshold(threshold);
-        uv.set_topN(1);
-        Vector <VariantClass> random_variant=new Vector<VariantClass>();
-        int max_index=-1;
-        int total_acceptable=0;
-        int total_ratings=0;
-        for(int i=0;i<variant.size();i++)
-        {
-            VariantClass var=variant.get(i);
-            
-            if(var.user_id==uId && var.no_of_permissions_removed>=no_of_permission)
-            {
-                uv.set_should_retrieve(var.isAcceptable);
-                if(uv.set_max(var.predicted_rating, var.item_id-16, var.actual_rating, var.isAcceptable))
-                    max_index=i;
-                random_variant.add(var);
-                total_acceptable+=var.isAcceptable;
-                total_ratings++;
-            //    System.out.println("-------------------------------------------");
-             //   System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
-             //   System.out.println("-------------------------------------------");
-             //   var.print();
-            }
-        }
-        
-             if((double)total_acceptable/(double)total_ratings>0.3 &&  (double)total_acceptable/(double)total_ratings<0.8  )
-                uv.should_count=1;
-          System.out.println("UserID "+uId+" Total Acceptable: "+(double)total_acceptable/(double)total_ratings+" Total Ratings: "+total_ratings+ " Count: "+uv.should_count);
    
-    //    System.out.println("UID: "+uId+" Max_Index: "+ max_index);
-        VariantClass max_var;
-      
-      /*   System.out.println("-------------------------------------------");
-             System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
-             System.out.println(" Total Permission Set:  "+random_variant.size());
-             System.out.println("-------------------------------------------");*/
-          // Random 
-       Random rn=new Random();
-       
-     
-       if(random_variant.size()>0)
-       {
-            VariantClass random_var=random_variant.get(rn.nextInt(random_variant.size()));
-            
-             //random_var.print();
-       // uv.set_max_random(random_var.predicted_rating, random_var.item_id-16, random_var.actual_rating, random_var.isAcceptable);
-       }
-        uv.check_relevance();
-      // uv.print();
-        return uv;
-        
-    }
-    public static UserVariant get_user_variant1(int uId, int no_of_permission,double threshold)
-    {
-        UserVariant uv=new UserVariant(uId);
-        uv.set_threshold(threshold);
-        Vector <VariantClass> random_variant=new Vector<VariantClass>();
-        int no_of_permission_set=0;
-        
-        for(int i=0;i<variant.size();i++)
-        {
-            VariantClass var=variant.get(i);
-            if(var.user_id==uId && var.no_of_permissions_removed==no_of_permission)
-            {
-                uv.set_should_retrieve(var.isAcceptable);
-                uv.set_max(var.predicted_rating, var.item_id-16, var.actual_rating, var.isAcceptable);
-                random_variant.add(var);
-                no_of_permission_set++;
-            //    System.out.println("-------------------------------------------");
-             //   System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
-             //   System.out.println("-------------------------------------------");
-             //   var.print();
-            }
-            if(var.user_id==uId)
-            {
-               
-                random_variant.add(var);
-               
-            //    System.out.println("-------------------------------------------");
-             //   System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
-             //   System.out.println("-------------------------------------------");
-             //   var.print();
-            }
-        }
-         /*   System.out.println("-------------------------------------------");
-             System.out.println("User ID: "+uId+" Perm Removed "+no_of_permission);
-             System.out.println(" Total Permission Set:  "+no_of_permission_set);
-             System.out.println("-------------------------------------------");*/
-        
-       
-        
-     /*  for(int j=0;j<random_variant.size();j++)
-        {
-            random_variant.get(j).print();
-            System.out.println("-------------------------------------------");
-            
-        }*/
-        
-        
-        // Random 
-       Random rn=new Random();
-       
-     
-       if(random_variant.size()>0)
-       {
-            VariantClass random_var=random_variant.get(rn.nextInt(random_variant.size()));
-       // random_var.print();
-        uv.set_max_random(random_var.predicted_rating, random_var.item_id-16, random_var.actual_rating, random_var.isAcceptable);
-       }
-       //uv.set_max_random(, uId, threshold, uId);
-        uv.check_relevance();
-        
-    //   // System.out.println("-------------------------------------------");
-    //    System.out.println("Max");
-    //     uv.print();
-    //     System.out.println("-------------------------------------------");
-        return uv;
-        
-    }
-    public static void correctness_variant2() throws IOException
-    {
-        FileWriter fw = new FileWriter(filename_variant2_precision);
-        PrintWriter pw = new PrintWriter(fw);
-        pw.print("Threshold");
-        pw.print(",");
-        
-        pw.print("1 Permission");
-        pw.print(",");
-        
-        pw.print("2 Permission");
-        pw.print(",");
-        
-        pw.print("3 Permission");
-        pw.print(",");
-        
-        pw.print("4 Permission");
-        pw.print(",");
-        
-        pw.println("Combined");
-                
-        FileWriter fw2 = new FileWriter(filename_variant2_recall);
-        PrintWriter pw2 = new PrintWriter(fw2);
-        pw2.print("Threshold");
-        pw2.print(",");
-        
-        pw2.print("1 Permission");
-        pw2.print(",");
-        
-        pw2.print("2 Permission");
-        pw2.print(",");
-        
-        pw2.print("3 Permission");
-        pw2.print(",");
-        
-        pw2.print("4 Permission");
-        pw2.print(",");
-        
-        pw2.println("Combined");
-        
-        
-        
-   for(double thresholdT=4.0;thresholdT<4.5;thresholdT+=0.5)
-        {
-            double precision=0;
-            double recall=0;
-            double combined_pr=0;
-            double combined_recall=0;
-            pw.print(String.format("%.2f", thresholdT));
-            pw.print(",");
 
-            pw2.print(String.format("%.2f", thresholdT));
-            pw2.print(",");
-            System.out.println("-------------------------------------------");
-            System.out.println("Threshold : "+String.format("%.2f", thresholdT));
-            System.out.println("-------------------------------------------");
-            for(int p=1;p<4;p++)
-            {
-                double total_precision=0.0;
-                double total_recall=0.0;
-                int all_total=0;
-                for(int k=0;k<1;k++)
-                {
-                    int total_should_retrive_relevent=0;
-                    int total_retrieved=0;
-                    int total_relevent=0;
-                    
-                    
-                    for(int i=0;i<allUserRatings.size();i++)
-                    {
-                        User_Ratings active_user=allUserRatings.get(i);
-                        UserVariant uv=get_user_variant2(active_user.get_user_id(), p,thresholdT);
-                        if(uv.should_count==1)
-                        {
-                        total_should_retrive_relevent+=uv.should_retreive;
-                        total_retrieved+=uv.retrieved;
-                        total_relevent+=uv.relevent;
-                        }
-            //      uv.print();
-                    }
-                    all_total+=total_relevent;
-                            
-                   System.out.println("-------------------------------------------");
-                    System.out.println("Permissions Removed: "+p);
-                    System.out.println("-------------------------------------------");
-                    System.out.println("Total Should Retrieved: "+total_should_retrive_relevent); 
-                    System.out.println("Total Retrieved: "+total_retrieved);
-                    System.out.println("Total Relevent : "+total_relevent);
-
-
-                    if(total_retrieved!=0) //Buggy
-                    {
-                        precision= (double)total_relevent/(double)total_retrieved;
-                        
-                    }
-                    if(total_should_retrive_relevent!=0)
-                    {
-                        recall=(double)total_relevent/(double)total_should_retrive_relevent;
-                        
-                    }
-                    if(total_retrieved==0)
-                    {
-                        precision=1.0;
-                        recall=0;
-
-                    }
-                    total_precision+=precision;
-                    total_recall+=recall;
-                    
-                    
-                }
-                System.out.println("Average: "+all_total/10);
-                
-                pw.print(total_precision/10.0);
-                pw.print(",");
-
-                pw2.print(total_recall/10.0);
-                pw2.print(",");
-
-                 
-             
-                System.out.println("Precision: "+total_precision/10.0+ ", Recall: "+total_recall/10.0);
-                combined_pr+=total_precision/10.0;
-                combined_recall+=total_recall/10.0;
-
-            }
-            
-            pw.println(combined_pr/4.0);
-            pw2.println(combined_recall/4.0);
-         //   System.out.println("Combined Precision: "+combined_pr/4.0+ ", Combined Recall: "+combined_recall/4.0);
-        }
-        
-        pw.close();
-        
-        //Close the File Writer
-        fw.close(); 
-        
-        pw2.close();
-        
-        //Close the File Writer
-        fw2.close(); 
-             
-       
-        
-        
-    }
-    public static void correctness_variant1() throws IOException
-    {
-        FileWriter fw = new FileWriter(filename_variant1_precision);
-        PrintWriter pw = new PrintWriter(fw);
-        pw.print("Threshold");
-        pw.print(",");
-        
-        pw.print("1 Permission");
-        pw.print(",");
-        
-        pw.print("2 Permission");
-        pw.print(",");
-        
-        pw.print("3 Permission");
-        pw.print(",");
-        
-        pw.print("4 Permission");
-        pw.print(",");
-        
-        pw.println("Combined");
-                
-        FileWriter fw2 = new FileWriter(filename_variant1_recall);
-        PrintWriter pw2 = new PrintWriter(fw2);
-        pw2.print("Threshold");
-        pw2.print(",");
-        
-        pw2.print("1 Permission");
-        pw2.print(",");
-        
-        pw2.print("2 Permission");
-        pw2.print(",");
-        
-        pw2.print("3 Permission");
-        pw2.print(",");
-        
-        pw2.print("4 Permission");
-        pw2.print(",");
-        
-        pw2.println("Combined");
-        
-        
-        
-        for(double thresholdT=1.0;thresholdT<7.0;thresholdT+=0.1)
-        {
-            double precision=0;
-            double recall=0;
-            double combined_pr=0;
-            double combined_recall=0;
-            pw.print(String.format("%.2f", thresholdT));
-            pw.print(",");
-
-            pw2.print(String.format("%.2f", thresholdT));
-            pw2.print(",");
-            System.out.println("-------------------------------------------");
-            System.out.println("Threshold : "+String.format("%.2f", thresholdT));
-            System.out.println("-------------------------------------------");
-            for(int p=1;p<3;p++)
-            {
-                double total_precision=0.0;
-                double total_recall=0.0;
-                for(int k=0;k<10;k++)
-                {
-                    int total_should_retrive_relevent=0;
-                    int total_retrieved=0;
-                    int total_relevent=0;
-                    
-                    for(int i=0;i<allUserRatings.size();i++)
-                    {
-                        User_Ratings active_user=allUserRatings.get(i);
-                        UserVariant uv=get_user_variant1(active_user.get_user_id(), p,thresholdT);
-                        total_should_retrive_relevent+=uv.should_retreive;
-                        total_retrieved+=uv.retrieved;
-                        total_relevent+=uv.relevent;
-            //      uv.print();
-                    }
-                /*   System.out.println("-------------------------------------------");
-                    System.out.println("Permissions Removed: "+p);
-                    System.out.println("-------------------------------------------");
-                    System.out.println("Total Should Retrieved: "+total_should_retrive_relevent); 
-                    System.out.println("Total Retrieved: "+total_retrieved);
-                    System.out.println("Total Relevent : "+total_relevent);*/
-
-
-                    if(total_retrieved!=0) //Buggy
-                    {
-                        precision= (double)total_relevent/(double)total_retrieved;
-                        
-                    }
-                    if(total_should_retrive_relevent!=0)
-                    {
-                        recall=(double)total_relevent/(double)total_should_retrive_relevent;
-                        
-                    }
-                    if(total_retrieved==0)
-                    {
-                        precision=1.0;
-                        recall=0;
-
-                    }
-                    total_precision+=precision;
-                    total_recall+=recall;
-                    
-                    
-                }
-                
-                pw.print(total_precision/10.0);
-                pw.print(",");
-
-                pw2.print(total_recall/10.0);
-                pw2.print(",");
-
-                 
-             
-                System.out.println("Precision: "+total_precision/10.0+ ", Recall: "+total_recall/10.0);
-                combined_pr+=total_precision/10.0;
-                combined_recall+=total_recall/10.0;
-
-            }
-            
-            pw.println(combined_pr/4.0);
-            pw2.println(combined_recall/4.0);
-            System.out.println("Combined Precision: "+combined_pr/4.0+ ", Combined Recall: "+combined_recall/4.0);
-        }
-        
-        pw.close();
-        
-        //Close the File Writer
-        fw.close(); 
-        
-        pw2.close();
-        
-        //Close the File Writer
-        fw2.close(); 
-             
-       
-        
-        
-    }
     
     public static void main(String[] args) throws IOException {
         // TODO code application logic here
@@ -1001,19 +487,19 @@ public class PermissionRecommender {
         
        
         double error=0;
-        for(int i=3;i<4;i++)
+        for(int i=2;i<3;i++)
         {
             GlobalConstants.number_of_neighbours=i;
             
-            GlobalConstants.clamping=false;
-         //   System.out.print("NN: "+i+ " Without Clamping");
-            error+=leave_one_out_evaluation(GlobalConstants.metric_cosine_similarity);
+           GlobalConstants.clamping=false;
+          // System.out.print("NN: "+i+ " Without Clamping");
+      //     error+=leave_one_out_evaluation(GlobalConstants.metric_cosine_similarity);
             
-          //  GlobalConstants.clamping=true;
-         //   System.out.print("NN: "+i+ " With Clamping");
-         //   error=leave_one_out_evaluation(GlobalConstants.metric_cosine_similarity);
+            GlobalConstants.clamping=true;
+           // System.out.print("NN: "+i+ " With Clamping");
+            error=leave_one_out_evaluation(GlobalConstants.metric_cosine_similarity);
             
-         //   System.out.println("-------------------------------------------");
+            System.out.println("-------------------------------------------");
             
         }
        // correctness_variant2();
@@ -1024,10 +510,10 @@ public class PermissionRecommender {
         for(int l=0;l<variant.size();l++)
         {
         //  System.out.println("Index "+ l);
-         // if(variant.get(l).user_id==74 || variant.get(l).user_id==77)
-          //{
+          if(variant.get(l).user_id==74 || variant.get(l).user_id==77)
+          {
             variant.get(l).print();
-          //}
+          }
             tot_ac=variant.get(l).predicted_rating>=4.0?tot_ac+1:tot_ac;
             tot_fault=variant.get(l).predicted_rating>=4.0 && variant.get(l).isAcceptable==1?tot_fault+1:tot_fault;
             
