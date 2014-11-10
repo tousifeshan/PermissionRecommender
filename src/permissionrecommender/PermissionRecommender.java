@@ -238,7 +238,7 @@ public class PermissionRecommender {
             for(int i=0;i<child_ids.size();i++)
             {
                 int cid=child_ids.get(i)-16;
-            //    System.out.println("CID: "+ cid);
+            //   System.out.println("CID: "+ cid);
                 double s_rating=active_user.get_specific_rating(cid);
                 if(s_rating>0.0 && s_rating<min)
                     min=s_rating;
@@ -248,9 +248,13 @@ public class PermissionRecommender {
         {
             return prediction;
         }
-       // System.out.println("Minimum: "+min+", Prediction: "+prediction);
+       //System.out.println("Minimum: "+min+", Prediction: "+prediction);
         if(prediction<min)
             min=prediction;
+        else
+        {
+             System.out.println("Active User: "+active_user.get_user_id()+", index "+(index+16) +" Minimum: "+min+", Prediction: "+prediction);
+        }
         
         return min;
     }
@@ -282,14 +286,14 @@ public class PermissionRecommender {
         {
             User_Ratings active_user=allUserRatings.get(i);
             item_mae=0.0;
-    //        if(active_user.get_user_id()==55 )
-      //      {
+            if(active_user.get_user_id()==79)
+            {
            for(int j=0;j<active_user.get_total_used();j++)
          //   for(int j=0;j<15;j++)
             {
                 int index=active_user.leave_nth_one(j);
               //  int index=0;
-           //     System.out.println("Index "+ index);
+            //    System.out.println("Index "+ index);
              //   System.out.println("Initial Mean"+active_user.get_mean());
             //    System.out.println(active_user.get_user_id());
                 VariantClass var=new VariantClass(active_user.get_user_id(),index);
@@ -312,13 +316,15 @@ public class PermissionRecommender {
                     predicted_rating=1;
                 if(predicted_rating>7)
                     predicted_rating=7.0;
-                var.add_predicted_rating(predicted_rating);
+              
         //        System.out.println("Prediction:"+predicted_rating);
               
                 if(GlobalConstants.clamping)
                 {
                  predicted_rating=find_the_minimum(active_user,predicted_rating, index);
                 }
+                
+                  var.add_predicted_rating(predicted_rating);
                 
                item_mae+=Math.abs(actual_value-predicted_rating);//predict_ratings_based_on_similarity(active_user, nearest_set,index));
                item_rmse+=(actual_value-predicted_rating)*(actual_value-predicted_rating);
@@ -331,13 +337,13 @@ public class PermissionRecommender {
       
                 users_nearest_neighbours.clear();
 //                generated_users.clear();
-    
+                var.print();
                 
                 active_user.set_specific_rating(actual_value, index);
                 variant.add(var);
                // System.out.println(active_user.get_specific_rating(index));
             }
-     //   }
+        }
             
          //   System.out.println("Id: "+active_user.get_user_id()+", Used Items "+active_user.get_total_used());
          //   System.out.println("MAE "+item_mae);
@@ -510,9 +516,9 @@ public class PermissionRecommender {
         for(int l=0;l<variant.size();l++)
         {
         //  System.out.println("Index "+ l);
-          if(variant.get(l).user_id==74 || variant.get(l).user_id==77)
+          if(variant.get(l).user_id==61 || variant.get(l).user_id==77)
           {
-            variant.get(l).print();
+       //     variant.get(l).print();
           }
             tot_ac=variant.get(l).predicted_rating>=4.0?tot_ac+1:tot_ac;
             tot_fault=variant.get(l).predicted_rating>=4.0 && variant.get(l).isAcceptable==1?tot_fault+1:tot_fault;
