@@ -26,7 +26,7 @@ public class UserVariant {
     int max_index;
     int second_max_index;
     
-    int relevent;
+    int relevant;
     int retrieved;
     double threshold;
 
@@ -36,7 +36,7 @@ public class UserVariant {
         max_prediction=0;
         actual_value_for_max=0;
         max_index=0;
-        relevent=0;
+        relevant=0;
         threshold=4.0;
         retrieved=0;
         is_actual_acceptable=0;
@@ -53,7 +53,7 @@ public class UserVariant {
         max_prediction=0;
         actual_value_for_max=0;
         max_index=0;
-        relevent=0;
+        relevant=0;
         threshold=4.0;
         retrieved=0;
         is_actual_acceptable=0;
@@ -104,7 +104,6 @@ public class UserVariant {
             return true;
         }
         return false;
-        
     }
     
     public void set_max_random(double prediction,int index, double actual, int isAcceptable)
@@ -113,7 +112,6 @@ public class UserVariant {
         max_index=index;
         set_actual(actual);
         set_is_actual_acceptable(isAcceptable);
-        
     }
     
     public void set_actual(double actual)
@@ -139,7 +137,7 @@ public class UserVariant {
             {
                 if(is_actual_acceptable==1)
                 {
-                relevent=1;
+                relevant=1;
                 }
             }
             
@@ -147,29 +145,24 @@ public class UserVariant {
             {
                 if(is_actual_acceptable==1 || is_second_acceptable==1)
                 {
-                  relevent=1;
+                  relevant=1;
                 }
             }
             
         }
     }
     
-   
-    
-    
     public void print()
     {
-         System.out.println("-------------------------------------------");
+        System.out.println("-------------------------------------------");
         System.out.println("User ID: "+user_id);
-         System.out.println("-------------------------------------------");
+        System.out.println("-------------------------------------------");
         System.out.println("Actual Rating: "+actual_value_for_max+", Acceptable: "+is_actual_acceptable);
         System.out.println("Should Retrieve: "+should_retreive);
         System.out.println("Retrived: "+ retrieved);
-        System.out.println("Relevent: "+ relevent);
+        System.out.println("Relevant: "+ relevant);
         System.out.println("Max_Predict:"+max_prediction+ ", Actual: "+actual_value_for_max+ ", Item: "+GlobalConstants.names.get_names(max_index));
         System.out.println("Second Max_Predict:"+second_max+ ", Actual: "+actual_value_for_second_max+ ", Item: "+GlobalConstants.names.get_names(second_max_index));
     }
-    
-    
     
 }
